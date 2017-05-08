@@ -841,6 +841,7 @@ function commerce_pos_report_build_journal_role_table(array $filters = array()) 
 
   // Join line item data.
   $query->join('commerce_line_item', 'l', 'l.order_id = t.order_id');
+  $query->addField( 'l', 'quantity' );
   $query->addExpression('COUNT(DISTINCT l.line_item_id)', 'item_count');
 
   $line_item_types = commerce_product_line_item_types();
@@ -889,11 +890,11 @@ function commerce_pos_report_build_journal_role_table(array $filters = array()) 
 
       switch ($row->type) {
         case CommercePosService::TRANSACTION_TYPE_RETURN:
-          $return_count = $row->item_count;
+          $return_count = (int)$row->quantity;
           break;
 
         default:
-          $purchase_count = $row->item_count;
+          $purchase_count = (int)$row->quantity;
           break;
       }
 

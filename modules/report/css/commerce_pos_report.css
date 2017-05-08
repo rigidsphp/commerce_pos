@@ -126,6 +126,22 @@ a:hover .commerce-pos-report-ico-journal-role {
   vertical-align: middle;
 }
 
+.commerce-pos-report-ico-kpi-report{
+  position: relative;
+  bottom: 2px;
+  background: url(../../../images/sprite_icons.png) -56px 0;
+  width: 18px;
+  height: 20px;
+  display: inline-block;
+  vertical-align: middle;
+  margin-right: 10px;
+
+}
+a.active .commerce-pos-report-ico-kpi-report,
+a:hover .commerce-pos-report-ico-kpi-report {
+  background-position: -80px 0;
+}
+
 /* -- Report Filters -- */
 
 #commerce-pos-report-journal-role-options-container {

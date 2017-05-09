@@ -1259,8 +1259,7 @@ function commerce_pos_report_kpi_report_submit($form, &$form_state) {
 }
 
 /**
- * Helper function for KPI table to process data
- * Function to loop through data fetched form database.
+ * Helper function for KPI table to process data. Function to loop through data fetched form database.
  */
 function kpi_process_data($result) {
   $table_row = array();

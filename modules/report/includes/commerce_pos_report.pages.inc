@@ -789,7 +789,6 @@ function commerce_pos_report_journal_role_submit($form, &$form_state) {
  *   A render array for the result table.
  */
 function commerce_pos_report_build_journal_role_table(array $filters = array()) {
-
   $header = array(
     array('data' => t('Order No.'), 'field' => 't.order_id'),
     array('data' => t('Time'), 'field' => 't.completed'),
@@ -1006,7 +1005,6 @@ function commerce_pos_report_build_journal_role_table(array $filters = array()) 
   }
 }
 
-/*KPI REPORT MODULE*/
 /**
  * Builds a KPI Report result table.
  *
@@ -1020,7 +1018,6 @@ function commerce_pos_report_build_journal_role_table(array $filters = array()) 
  *   A render array for the result table.
  */
 function commerce_pos_report_build_kpi_report_table(array $filters = array()) {
-
   $header = array(
       array('data' => t('Cashier Id'), 'field' => 't.cashier'),
       array('data' => t('Cashier'), 'field' => 'cashier.name'),
@@ -1177,7 +1174,6 @@ function commerce_pos_report_build_kpi_report_table(array $filters = array()) {
  */
 function commerce_pos_report_kpi_report($form, &$form_state) {
   global $user;
-
   $form['#tree'] = TRUE;
   $form['header'] = array(
       '#markup' => theme('commerce_pos_header', array('account' => $user)),
@@ -1213,16 +1209,13 @@ function commerce_pos_report_kpi_report($form, &$form_state) {
       'type' => 'setting',
       'data' => $js_settings,
   );
-
   $form['report-options'] = array(
       '#theme' => 'commerce_pos_report_options',
   );
-
   $form['options'] = array(
       '#type' => 'container',
       '#id' => 'commerce-pos-report-journal-role-options-container',
   );
-
   $form['options']['results_per_page'] = array(
       '#type' => 'select',
       '#title' => t('Items per page'),
@@ -1238,14 +1231,11 @@ function commerce_pos_report_kpi_report($form, &$form_state) {
           'class' => array('commerce-pos-report-journal-role-filter'),
       ),
   );
-
   $form['results'] = array(
       '#type' => 'container',
       '#id' => $form_state['results_container_id'],
   );
-
   $form['results']['table'] = commerce_pos_report_build_kpi_report_table($query_params);
-
   // Pager has to come after we've build the journal role table.
   $form['options']['pager'] = array('#theme' => 'pager');
   $form['results']['pager'] = array('#theme' => 'pager');
@@ -1275,7 +1265,6 @@ function commerce_pos_report_kpi_report_submit($form, &$form_state) {
  * Function to loop through data fetched form database
  */
 function kpi_process_data($result){
-
   $table_row = array();
   foreach ($result as $row) {
     $return_count = 0;
@@ -1299,13 +1288,10 @@ function kpi_process_data($result){
     $table_row[$cashier_id]['cashier']['id'] = $cashier_id;
     // Cashier.
     $table_row[$cashier_id]['cashier']['name'] = $row->cashier;
-
     // number of transactions
     $table_row[$cashier_id]['cashier']['transactions'] += $transactions;
-
     // Purchased.
     $table_row[$cashier_id]['transaction']['purchase_count'] += $purchase_count;
-
     // Returned.
     $table_row[$cashier_id]['transaction']['return_count'] += $return_count;
 
@@ -1322,7 +1308,6 @@ function kpi_process_data($result){
         }
       }
     }
-
 
     if (!isset($totals['order_total'][$row->commerce_order_total_currency_code])) {
       $totals['order_total'][$row->commerce_order_total_currency_code] = $row->commerce_order_total_amount;

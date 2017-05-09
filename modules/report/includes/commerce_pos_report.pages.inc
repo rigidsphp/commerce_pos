@@ -1012,7 +1012,7 @@ function commerce_pos_report_build_journal_role_table(array $filters = array()) 
  *   An array of filters for the query. Can include any of the following:
  *   'cashier' - The cashier who performed the transactions.
  *   'payment_type' - The type of payment the transactions had.
- *   'results_per_page' - The number of results per page.
+ *   'results_per_page' - The number of results per page. 
  *
  * @return array
  *   A render array for the result table.

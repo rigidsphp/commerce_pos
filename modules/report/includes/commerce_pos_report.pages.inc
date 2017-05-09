@@ -800,7 +800,7 @@ function commerce_pos_report_build_journal_role_table(array $filters = array()) 
     array('data' => t('Discount')),
     array(
       'data' => t('Order Total'),
-      'field' => 'ot.commerce_order_total_amount'
+      'field' => 'ot.commerce_order_total_amount',
     ),
   );
 
@@ -833,7 +833,7 @@ function commerce_pos_report_build_journal_role_table(array $filters = array()) 
   $query->fields('ot', array(
     'commerce_order_total_amount',
     'commerce_order_total_currency_code',
-    'commerce_order_total_data'
+    'commerce_order_total_data',
   ));
 
   // Join line item data.
@@ -900,7 +900,7 @@ function commerce_pos_report_build_journal_role_table(array $filters = array()) 
         'attributes' => array(
           'class' => array('commerce-pos-report-journal-role-order use-ajax'),
           'data-order-id' => $row->order_id,
-        )
+        ),
       ));
 
       $table_row[] = format_date($row->completed, 'custom', 'g:i a');
@@ -1012,7 +1012,7 @@ function commerce_pos_report_build_journal_role_table(array $filters = array()) 
  *   An array of filters for the query. Can include any of the following:
  *   'cashier' - The cashier who performed the transactions.
  *   'payment_type' - The type of payment the transactions had.
- *   'results_per_page' - The number of results per page. 
+ *   'results_per_page' - The number of results per page.
  *
  * @return array
  *   A render array for the result table.
@@ -1025,12 +1025,12 @@ function commerce_pos_report_build_kpi_report_table(array $filters = array()) {
       array('data' => t('Transactions')),
       array('data' => t('Items Sold')),
       array('data' => t('Unit per Trans (UPT)')),
-      array('data' => t('$ Per Transaction (DPT)'))
+      array('data' => t('$ Per Transaction (DPT)')),
   );
 
   $query = db_select('commerce_pos_transaction', 't')
-      ->extend('PagerDefault')
-      ->extend('TableSort');
+    ->extend('PagerDefault')
+    ->extend('TableSort');
 
   $query->fields('t', array('order_id', 'completed', 'uid', 'type'));
   $query->addField('t', 'cashier', 'cashier_id');
@@ -1049,20 +1049,19 @@ function commerce_pos_report_build_kpi_report_table(array $filters = array()) {
   $query->leftJoin('users', 'customer', 'customer.uid = o.uid');
   $query->addField('customer', 'mail', 'customer_mail');
 
-
   // Join order total data.
   $query->join('field_data_commerce_order_total', 'ot', 't.order_id = ot.entity_id AND ot.entity_type = :commerce_order', array(
-      ':commerce_order' => 'commerce_order',
+    ':commerce_order' => 'commerce_order',
   ));
   $query->fields('ot', array(
-      'commerce_order_total_amount',
-      'commerce_order_total_currency_code',
-      'commerce_order_total_data'
+    'commerce_order_total_amount',
+    'commerce_order_total_currency_code',
+    'commerce_order_total_data',
   ));
 
   // Join line item data.
   $query->join('commerce_line_item', 'l', 'l.order_id = t.order_id');
-  $query->addField( 'l', 'quantity' );
+  $query->addField('l', 'quantity');
   $query->addExpression('COUNT(DISTINCT l.line_item_id)', 'item_count');
 
   $line_item_types = commerce_product_line_item_types();
@@ -1075,14 +1074,12 @@ function commerce_pos_report_build_kpi_report_table(array $filters = array()) {
    * As mysql do not support limits in sub queries
    * create sub query for pagination
    * and to limit records use a separate query.
-  */
+   */
+  $subQuery = db_select('commerce_pos_cashier', 'cpc')
+    ->extend('PagerDefault')
+    ->extend('TableSort');
 
-  $subQuery = db_select('commerce_pos_cashier','cpc')
-                ->extend('PagerDefault')
-                ->extend('TableSort');
-
-  $subQuery->fields('cpc',array('cashier_id'));
-  $num_rows = $subQuery->countQuery()->execute()->fetchField(); // total number of cashiers in the database
+  $subQuery->fields('cpc', array('cashier_id'));
   $subQuery->limit($filters['results_per_page']);
 
   $limit_rows_result = $subQuery->execute();
@@ -1091,7 +1088,7 @@ function commerce_pos_report_build_kpi_report_table(array $filters = array()) {
       $cashiers_id[] = $fetchCashier->cashier_id;
     }
   }
-  $query->condition('cashier.cashier_id',$cashiers_id,'IN');
+  $query->condition('cashier.cashier_id', $cashiers_id, 'IN');
 
   // Set up our filters/conditions.
   $query->orderByHeader($header);
@@ -1101,70 +1098,71 @@ function commerce_pos_report_build_kpi_report_table(array $filters = array()) {
   $unit_per_transaction = 0;
   $net_sales = 0;
   $totals = array(
-      'net_sales' => 0,
-      'transactions' => 0,
-      'item_sold' => 0,
-      'unit_per_transaction'=> 0,
-      'dollar_per_transaction'=> 0
+    'net_sales' => 0,
+    'transactions' => 0,
+    'item_sold' => 0,
+    'unit_per_transaction' => 0,
+    'dollar_per_transaction' => 0,
   );
 
   if ($result->rowCount() > 0) {
-    $report  = kpi_process_data($result);
-    foreach($report as $cashier_transactions){
-      $table_row  =  array();
-      $transactions = $cashier_transactions['cashier']['transactions'];
-      $currency_code  = $cashier_transactions['cashier']['currency_code'];
-      $net_sales    = $cashier_transactions['transaction']['net_sales'];
-      $net_sold_items  = ($cashier_transactions['transaction']['purchase_count'] - $cashier_transactions['transaction']['return_count']);
-      $unit_per_transaction = round(($net_sold_items / $transactions), 2 );
-      $dollar_per_transaction = ( $net_sales / $transactions);
-      $table_row[]  = $cashier_transactions['cashier']['id'];
-      $table_row[]  = $cashier_transactions['cashier']['name'];
-      $table_row[]  = commerce_currency_format($net_sales, $currency_code);
-      $table_row[]  = $transactions;
-      $table_row[]  = $net_sold_items;
-      $table_row[]  =  $unit_per_transaction;  //Unit per Trans (UPT)
-      $table_row[]  = commerce_currency_format($dollar_per_transaction, $currency_code);
-      // table feet with total
-      $totals['net_sales'] +=  $net_sales;
-      $totals['transactions'] +=  $transactions;
-      $totals['item_sold'] +=  $net_sold_items;
-      $totals['unit_per_transaction'] +=  $unit_per_transaction;
-      $totals['dollar_per_transaction'] +=  $dollar_per_transaction;
+    $report = kpi_process_data($result);
+    foreach ($report as $cashier_transactions) {
+      $table_row              = array();
+      $transactions           = $cashier_transactions['cashier']['transactions'];
+      $currency_code          = $cashier_transactions['cashier']['currency_code'];
+      $net_sales              = $cashier_transactions['transaction']['net_sales'];
+      $net_sold_items         = ($cashier_transactions['transaction']['purchase_count'] - $cashier_transactions['transaction']['return_count']);
+      $unit_per_transaction   = round(($net_sold_items / $transactions), 2);
+      $dollar_per_transaction = ($net_sales / $transactions);
+      $table_row[]            = $cashier_transactions['cashier']['id'];
+      $table_row[]            = $cashier_transactions['cashier']['name'];
+      $table_row[]            = commerce_currency_format($net_sales, $currency_code);
+      $table_row[]            = $transactions;
+      $table_row[]            = $net_sold_items;
+      // Unit per Trans (UPT)
+      $table_row[] = $unit_per_transaction;
+      $table_row[] = commerce_currency_format($dollar_per_transaction, $currency_code);
+      // Table feet with total.
+      $totals['net_sales'] += $net_sales;
+      $totals['transactions'] += $transactions;
+      $totals['item_sold'] += $net_sold_items;
+      $totals['unit_per_transaction'] += $unit_per_transaction;
+      $totals['dollar_per_transaction'] += $dollar_per_transaction;
       $rows[] = array(
-          'data' => $table_row,
-          'class' => '',
+        'data' => $table_row,
+        'class' => '',
       );
     }
 
     $rows[] = array(
-        '',
-        '',
-        commerce_currency_format($totals['net_sales'], $currency_code),
-        $totals['transactions'],
-        $totals['item_sold'],
-        $totals['unit_per_transaction'],
-        commerce_currency_format($totals['dollar_per_transaction'], $currency_code)
+      '',
+      '',
+      commerce_currency_format($totals['net_sales'], $currency_code),
+      $totals['transactions'],
+      $totals['item_sold'],
+      $totals['unit_per_transaction'],
+      commerce_currency_format($totals['dollar_per_transaction'], $currency_code),
     );
 
     $table = array(
-        '#theme' => 'table',
-        '#rows' => $rows,
-        '#header' => $header,
-        '#attached' => array(
-            'js' => array(
-                drupal_get_path('module', 'commerce_pos_report') . '/js/commerce_pos_report.journal_role.js',
-            ),
-            'library' => array(
-                array('system', 'drupal.ajax'),
-            ),
+      '#theme' => 'table',
+      '#rows' => $rows,
+      '#header' => $header,
+      '#attached' => array(
+        'js' => array(
+          drupal_get_path('module', 'commerce_pos_report') . '/js/commerce_pos_report.journal_role.js',
         ),
+        'library' => array(
+                array('system', 'drupal.ajax'),
+        ),
+      ),
     );
     return $table;
   }
   else {
     return array(
-        '#markup' => t('No transactions found'),
+      '#markup' => t('No transactions found'),
     );
   }
 }
@@ -1176,17 +1174,17 @@ function commerce_pos_report_kpi_report($form, &$form_state) {
   global $user;
   $form['#tree'] = TRUE;
   $form['header'] = array(
-      '#markup' => theme('commerce_pos_header', array('account' => $user)),
+    '#markup' => theme('commerce_pos_header', array('account' => $user)),
   );
 
   $query_filter_defaults = array(
-      'results_per_page' => COMMERCE_POS_REPORT_KPI_REPORT_DEFAULT_ITEMS_PER_PAGE,
+    'results_per_page' => COMMERCE_POS_REPORT_KPI_REPORT_DEFAULT_ITEMS_PER_PAGE,
   );
 
   $query_params = drupal_get_query_parameters() + $query_filter_defaults;
 
   $form['filters'] = array(
-      '#type' => 'container',
+    '#type' => 'container',
   );
 
   if (!isset($form_state['results_container_id'])) {
@@ -1194,11 +1192,11 @@ function commerce_pos_report_kpi_report($form, &$form_state) {
   }
 
   $js_settings = array(
-      'commercePosReport' => array(
-          'cssUrl' => url(drupal_get_path('module', 'commerce_pos_report') . '/css/commerce_pos_report_receipt.css', array(
-              'absolute' => TRUE,
-          )),
-      ),
+    'commercePosReport' => array(
+      'cssUrl' => url(drupal_get_path('module', 'commerce_pos_report') . '/css/commerce_pos_report_receipt.css', array(
+        'absolute' => TRUE,
+      )),
+    ),
   );
 
   $form['#attached']['libraries_load'][] = array('jquery-print');
@@ -1206,34 +1204,34 @@ function commerce_pos_report_kpi_report($form, &$form_state) {
   $form['#attached']['css'][] = drupal_get_path('module', 'commerce_pos_report') . '/css/commerce_pos_report.css';
   $form['#attached']['js'][] = drupal_get_path('module', 'commerce_pos_report') . '/js/commerce_pos_report.journal_role.js';
   $form['#attached']['js'][] = array(
-      'type' => 'setting',
-      'data' => $js_settings,
+    'type' => 'setting',
+    'data' => $js_settings,
   );
   $form['report-options'] = array(
-      '#theme' => 'commerce_pos_report_options',
+    '#theme' => 'commerce_pos_report_options',
   );
   $form['options'] = array(
-      '#type' => 'container',
-      '#id' => 'commerce-pos-report-journal-role-options-container',
+    '#type' => 'container',
+    '#id' => 'commerce-pos-report-journal-role-options-container',
   );
   $form['options']['results_per_page'] = array(
-      '#type' => 'select',
-      '#title' => t('Items per page'),
-      '#options' => array(
-          25 => '25',
-          50 => '50',
-          100 => '100',
-          500 => '500',
-          -1 => t('all'),
-      ),
-      '#default_value' => $query_params['results_per_page'],
-      '#attributes' => array(
-          'class' => array('commerce-pos-report-journal-role-filter'),
-      ),
+    '#type' => 'select',
+    '#title' => t('Items per page'),
+    '#options' => array(
+      25 => '25',
+      50 => '50',
+      100 => '100',
+      500 => '500',
+      -1 => t('all'),
+    ),
+    '#default_value' => $query_params['results_per_page'],
+    '#attributes' => array(
+      'class' => array('commerce-pos-report-journal-role-filter'),
+    ),
   );
   $form['results'] = array(
-      '#type' => 'container',
-      '#id' => $form_state['results_container_id'],
+    '#type' => 'container',
+    '#id' => $form_state['results_container_id'],
   );
   $form['results']['table'] = commerce_pos_report_build_kpi_report_table($query_params);
   // Pager has to come after we've build the journal role table.
@@ -1241,12 +1239,12 @@ function commerce_pos_report_kpi_report($form, &$form_state) {
   $form['results']['pager'] = array('#theme' => 'pager');
 
   $form['submit'] = array(
-      '#value' => t('Submit'),
-      '#type' => 'submit',
-      '#weight' => -50,
-      '#attributes' => array(
-          'class' => array('element-invisible', 'commerce-pos-report-journal-role-submit'),
-      ),
+    '#value' => t('Submit'),
+    '#type' => 'submit',
+    '#weight' => -50,
+    '#attributes' => array(
+      'class' => array('element-invisible', 'commerce-pos-report-journal-role-submit'),
+    ),
   );
 
   return $form;
@@ -1256,15 +1254,15 @@ function commerce_pos_report_kpi_report($form, &$form_state) {
  * Submit handler for the journal role report form.
  */
 function commerce_pos_report_kpi_report_submit($form, &$form_state) {
-  $query_params = array_merge(drupal_get_query_parameters(),  $form_state['values']['options']);
+  $query_params = array_merge(drupal_get_query_parameters(), $form_state['values']['options']);
   $form_state['redirect'] = array(current_path(), array('query' => $query_params));
 }
 
 /**
  * Helper function for KPI table to process data
- * Function to loop through data fetched form database
+ * Function to loop through data fetched form database.
  */
-function kpi_process_data($result){
+function kpi_process_data($result) {
   $table_row = array();
   foreach ($result as $row) {
     $return_count = 0;
@@ -1275,12 +1273,14 @@ function kpi_process_data($result){
     switch ($row->type) {
       case CommercePosService::TRANSACTION_TYPE_RETURN:
         $return_count = $row->quantity;
-        $table_row[$cashier_id]['transaction']['net_sales']  -= $row->commerce_order_total_amount; // Order total.
+        // Order total.
+        $table_row[$cashier_id]['transaction']['net_sales'] -= $row->commerce_order_total_amount;
         break;
 
       default:
         $purchase_count = $row->quantity;
-        $table_row[$cashier_id]['transaction']['net_sales']  += $row->commerce_order_total_amount; // Order total.
+        // Order total.
+        $table_row[$cashier_id]['transaction']['net_sales'] += $row->commerce_order_total_amount;
         break;
     }
 
@@ -1288,7 +1288,7 @@ function kpi_process_data($result){
     $table_row[$cashier_id]['cashier']['id'] = $cashier_id;
     // Cashier.
     $table_row[$cashier_id]['cashier']['name'] = $row->cashier;
-    // number of transactions
+    // Number of transactions.
     $table_row[$cashier_id]['cashier']['transactions'] += $transactions;
     // Purchased.
     $table_row[$cashier_id]['transaction']['purchase_count'] += $purchase_count;
@@ -1296,25 +1296,8 @@ function kpi_process_data($result){
     $table_row[$cashier_id]['transaction']['return_count'] += $return_count;
 
     // Discount flag.
-    $order_total_data = unserialize($row->commerce_order_total_data);
-    $has_discount = FALSE;
-    $table_row[$cashier_id]['cashier']['currency_code']  = $row->commerce_order_total_currency_code;
+    $table_row[$cashier_id]['cashier']['currency_code'] = $row->commerce_order_total_currency_code;
 
-    if (!empty($order_total_data['components'])) {
-      foreach ($order_total_data['components'] as $component) {
-        if (!empty($component['name']) && strpos($component['name'], 'discount|') === 0) {
-          $has_discount = TRUE;
-          break;
-        }
-      }
-    }
-
-    if (!isset($totals['order_total'][$row->commerce_order_total_currency_code])) {
-      $totals['order_total'][$row->commerce_order_total_currency_code] = $row->commerce_order_total_amount;
-    }
-    else {
-      $totals['order_total'][$row->commerce_order_total_currency_code] += $row->commerce_order_total_amount;
-    }
   }
 
   return $table_row;

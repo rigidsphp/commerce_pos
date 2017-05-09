@@ -1035,8 +1035,6 @@ function commerce_pos_report_build_kpi_report_table(array $filters = array()) {
       ->extend('PagerDefault')
       ->extend('TableSort');
 
-  $query->limit($filters['results_per_page']);
-
   $query->fields('t', array('order_id', 'completed', 'uid', 'type'));
   $query->addField('t', 'cashier', 'cashier_id');
 
@@ -1075,23 +1073,31 @@ function commerce_pos_report_build_kpi_report_table(array $filters = array()) {
 
   // Make sure line item count is aggregated.
   $query->groupBy('l.order_id');
+
+  /*
+   * As mysql do not support limits in sub queries
+   * create sub query for pagination
+   * and to limit records use a separate query.
+  */
+
+  $subQuery = db_select('commerce_pos_cashier','cpc')
+                ->extend('PagerDefault')
+                ->extend('TableSort');
+
+  $subQuery->fields('cpc',array('cashier_id'));
+  $num_rows = $subQuery->countQuery()->execute()->fetchField(); // total number of cashiers in the database
+  $subQuery->limit($filters['results_per_page']);
+
+  $limit_rows_result = $subQuery->execute();
+  if ($limit_rows_result->rowCount() > 0) {
+    foreach ($limit_rows_result as $fetchCashier) {
+      $cashiers_id[] = $fetchCashier->cashier_id;
+    }
+  }
+  $query->condition('cashier.cashier_id',$cashiers_id,'IN');
+
   // Set up our filters/conditions.
-
-  if (!empty($filters['register'])) {
-    $query->condition('t.register_id', $filters['register']);
-  }
-
-
-  if (!empty($filters['payment_type']) && $filters['payment_type'] != 'all') {
-    $query->condition('pt.payment_method', $filters['payment_type']);
-  }
-
-  if (!empty($filters['cashier']) && $filters['cashier'] != 'all') {
-    $query->condition('cashier.cashier_id', $filters['cashier']);
-  }
-
   $query->orderByHeader($header);
-
   $result = $query->execute();
 
   $rows = array();
@@ -1107,7 +1113,6 @@ function commerce_pos_report_build_kpi_report_table(array $filters = array()) {
 
   if ($result->rowCount() > 0) {
     $report  = kpi_process_data($result);
-
     foreach($report as $cashier_transactions){
       $table_row  =  array();
       $transactions = $cashier_transactions['cashier']['transactions'];
@@ -1134,8 +1139,6 @@ function commerce_pos_report_build_kpi_report_table(array $filters = array()) {
           'class' => '',
       );
     }
-    // as we are processing mysql data set a custom total number of found results
-    // pager_default_initialize(2,1);
 
     $rows[] = array(
         '',
@@ -1160,7 +1163,6 @@ function commerce_pos_report_build_kpi_report_table(array $filters = array()) {
             ),
         ),
     );
-
     return $table;
   }
   else {
@@ -1169,7 +1171,6 @@ function commerce_pos_report_build_kpi_report_table(array $filters = array()) {
     );
   }
 }
-
 
 /**
  * Callback for the KPI form/report.
@@ -1213,10 +1214,6 @@ function commerce_pos_report_kpi_report($form, &$form_state) {
       'data' => $js_settings,
   );
 
-
-
-
-
   $form['report-options'] = array(
       '#theme' => 'commerce_pos_report_options',
   );
@@ -1225,8 +1222,6 @@ function commerce_pos_report_kpi_report($form, &$form_state) {
       '#type' => 'container',
       '#id' => 'commerce-pos-report-journal-role-options-container',
   );
-
-
 
   $form['options']['results_per_page'] = array(
       '#type' => 'select',
@@ -1266,7 +1261,6 @@ function commerce_pos_report_kpi_report($form, &$form_state) {
 
   return $form;
 }
-
 
 /**
  * Submit handler for the journal role report form.

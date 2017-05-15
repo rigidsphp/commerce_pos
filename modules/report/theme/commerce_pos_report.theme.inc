@@ -53,10 +53,10 @@ function theme_commerce_pos_report_options(&$variables) {
         'attributes' => array('class' => array('commerce-pos-journal-role')),
         'html' => TRUE,
       )),
-      l('<span class="commerce-pos-report-ico-kpi-report"></span>' . t('KPI Report'), 'admin/commerce/pos/reports/kpi-report', array(
-        'attributes' => array('class' => array('commerce-pos-kpi-report')),
+      l('<span class="commerce-pos-report-ico-sales-report"></span>' . t('Sales Report'), 'admin/commerce/pos/reports/sales-report', array(
+        'attributes' => array('class' => array('commerce-pos-sales-report')),
         'html' => TRUE,
-      ))
+      )),
     ),
     'attributes' => array(
       'class' => array('commerce-pos-report-options'),

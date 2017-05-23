@@ -286,7 +286,7 @@ function commerce_pos_report_end_of_day($form, &$form_state) {
   if (!empty($totals)) {
     $js_settings['currencies'] = commerce_pos_report_currency_js(array_keys($totals));
 
-    $form['results']['#attached']['js'][] = drupal_get_path('module', 'commerce_pos_report') . '/js/commerce_pos_report.sorter.js';
+    $form['results']['#attached']['js'][] = drupal_get_path('module', 'commerce_pos_report') . '/js/commerce_pos_report.js';
     $form['results']['#attached']['js'][] = array(
       'type' => 'setting',
       'data' => array(

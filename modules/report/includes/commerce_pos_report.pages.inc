@@ -1304,6 +1304,5 @@ function sales_process_data($result) {
     $table_row[$cashier_id]['cashier']['currency_code'] = $row->commerce_order_total_currency_code;
 
   }
-
   return $table_row;
 }

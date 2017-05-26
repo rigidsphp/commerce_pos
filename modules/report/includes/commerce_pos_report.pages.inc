@@ -192,8 +192,8 @@ function commerce_pos_report_end_of_day($form, &$form_state) {
         if (isset($currency_totals['commerce_pos_change'])) {
           $change_amounts = &$currency_totals['commerce_pos_change'];
 
-          // The change amount reflects the change we GAVE BACK, so we have to add
-          // it to the expected amount of cash.
+          // The change amount reflects the change we GAVE BACK, so we have
+          // to add it to the expected amount of cash.
           $expected_amount += ($change_amounts[CommercePosService::TRANSACTION_TYPE_SALE] - $change_amounts[CommercePosService::TRANSACTION_TYPE_RETURN]);
           unset($change_amounts);
         }
@@ -341,7 +341,8 @@ function commerce_pos_report_end_of_day($form, &$form_state) {
  * Get the reports for the specified day of a single register.
  *
  * @param string $date_filter
- *   The date range to filter by in compatible strtotime format. Will search this time +1day.
+ *   The date range to filter by in compatible strtotime format.
+ *   Will search this time +1day.
  * @param int $register_id
  *   The id of the register to get totals for.
  *
@@ -416,8 +417,11 @@ function commerce_pos_report_get_totals($date_filter, $register_id) {
         CommercePosService::TRANSACTION_TYPE_RETURN => 0,
       );
     }
-    $method = &$totals[$row->commerce_order_total_currency_code][$row->payment_method];
-    $method[$row->type] += $row->amount;
+
+    if ($row->status == COMMERCE_PAYMENT_STATUS_SUCCESS) {
+      $method = &$totals[$row->commerce_order_total_currency_code][$row->payment_method];
+      $method[$row->type] += $row->amount;
+    }
 
     if (in_array($row->status, $visible_statuses)) {
       if (!isset($transaction_counts[$row->payment_method])) {
@@ -801,7 +805,7 @@ function commerce_pos_report_build_journal_role_table(array $filters = array()) 
     array('data' => t('Discount')),
     array(
       'data' => t('Order Total'),
-      'field' => 'ot.commerce_order_total_amount'
+      'field' => 'ot.commerce_order_total_amount',
     ),
   );
 
@@ -836,7 +840,7 @@ function commerce_pos_report_build_journal_role_table(array $filters = array()) 
   $query->fields('ot', array(
     'commerce_order_total_amount',
     'commerce_order_total_currency_code',
-    'commerce_order_total_data'
+    'commerce_order_total_data',
   ));
 
   // Join line item data.
@@ -903,7 +907,7 @@ function commerce_pos_report_build_journal_role_table(array $filters = array()) 
         'attributes' => array(
           'class' => array('commerce-pos-report-journal-role-order use-ajax'),
           'data-order-id' => $row->order_id,
-        )
+        ),
       ));
 
       $table_row[] = format_date($row->completed, 'custom', 'g:i a');
@@ -945,8 +949,8 @@ function commerce_pos_report_build_journal_role_table(array $filters = array()) 
         'class' => array('commerce-pos-transaction-type-' . $row->type),
       );
 
-      // Add another row right below that will serve as a placeholder for loading
-      // in order data.
+      // Add another row right below that will serve as a placeholder
+      // for loading in order data.
       $rows[] = array(
         array(
           'colspan' => count($table_row),

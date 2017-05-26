@@ -139,10 +139,20 @@ function theme_commerce_pos_order_balance_summary(&$variables) {
   $rows = array();
   $totals = array();
   foreach ($transactions as $transaction) {
+    $action = "";
     $payment_method = commerce_payment_method_load($transaction->payment_method);
     $status = $transaction->status;
     $currency_code = $transaction->currency_code;
     $amount = $transaction->amount;
+
+    if ($status === COMMERCE_PAYMENT_STATUS_SUCCESS) {
+      $action = commerce_currency_format($amount, $currency_code) . '<br>' . theme('commerce_pos_transaction_actions', array('transaction' => $transaction));
+      $action_class = "amount";
+    }
+    elseif ($status == 'void') {
+      $action = t('VOID');
+      $action_class = "transaction-voided";
+    }
 
     $row = array(
       'data' => array(
@@ -154,20 +164,12 @@ function theme_commerce_pos_order_balance_summary(&$variables) {
     );
 
     if (empty($variables['display_only'])) {
-      $row['data'][] = array(
-        'data' => theme('commerce_pos_transaction_actions', array('transaction' => $transaction)),
-        'class' => array('actions'),
-      );
-
-      $row['data'][] = array(
-        'data' => theme('commerce_payment_transaction_status_icon', array('transaction_status' => $transaction_statuses[$status])),
-        'class' => array('status'),
-      );
+      $row['data'][] = array();
     }
 
     $row['data'][] = array(
-      'data' => commerce_currency_format($amount, $currency_code),
-      'class' => array('amount'),
+      'data' => $action,
+      'class' => array($action_class),
     );
 
     $rows[] = $row;
@@ -222,7 +224,6 @@ function theme_commerce_pos_transaction_actions($variables) {
         'class' => array(
           'commerce-pos-' . $action . '-payment',
           'button-link',
-          'small',
         ),
         'data-transaction-id' => $transaction->transaction_id,
       ),

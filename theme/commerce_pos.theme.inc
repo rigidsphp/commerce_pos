@@ -45,8 +45,8 @@ function commerce_pos_preprocess_commerce_pos_header(&$variables) {
   $variables['links'] = array();
 
   $links = array(
-      'admin/commerce/pos/sale' => t('Sale'),
-      'admin/commerce/pos/return' => t('Return'),
+    'admin/commerce/pos/sale' => t('Sale'),
+    'admin/commerce/pos/return' => t('Return'),
   );
 
   drupal_alter('commerce_pos_header_links', $links);
@@ -84,30 +84,30 @@ function theme_commerce_pos_product_summary(&$variables) {
       $image = _commerce_pos_product_thumbnail($line_item_wrapper->commerce_product->value());
 
       $row = array(
-          'data' => array(
+        'data' => array(
               array(
-                  'data' => (int) $line_item_wrapper->quantity->raw(),
-                  'class' => array('qty'),
+                'data' => (int) $line_item_wrapper->quantity->raw(),
+                'class' => array('qty'),
               ),
               array(
-                  'data' => $image,
-                  'class' => array('thumbnail'),
+                'data' => $image,
+                'class' => array('thumbnail'),
               ),
               array(
-                  'data' => $description,
-                  'class' => array('title'),
+                'data' => $description,
+                'class' => array('title'),
               ),
               array(
-                  'data' => t('@ @price', array(
-                      '@price' => commerce_currency_format($unit_price['amount'], $unit_price['currency_code']),
-                  )),
-                  'class' => array('base-price'),
+                'data' => t('@ @price', array(
+                  '@price' => commerce_currency_format($unit_price['amount'], $unit_price['currency_code']),
+                )),
+                'class' => array('base-price'),
               ),
               array(
-                  'data' => commerce_currency_format($total['amount'], $total['currency_code']),
-                  'class' => array('total'),
+                'data' => commerce_currency_format($total['amount'], $total['currency_code']),
+                'class' => array('total'),
               ),
-          ),
+        ),
       );
 
       $rows[] = $row;
@@ -115,14 +115,14 @@ function theme_commerce_pos_product_summary(&$variables) {
   }
 
   $attributes = array(
-      'class' => array('commerce-pos-product-summary'),
+    'class' => array('commerce-pos-product-summary'),
   );
 
   $attributes = drupal_array_merge_deep($attributes, $variables['attributes']);
 
   return theme('table', array(
-      'rows' => $rows,
-      'attributes' => $attributes,
+    'rows' => $rows,
+    'attributes' => $attributes,
   ));
 }
 
@@ -178,17 +178,17 @@ function theme_commerce_pos_order_balance_summary(&$variables) {
     }
 
     $row = array(
-        'data' => array(
+      'data' => array(
             array(
-                'data' => $title . $remote_id,
-                'class' => $row_classes,
+              'data' => $title . $remote_id,
+              'class' => $row_classes,
             ),
-        ),
+      ),
     );
 
     $row['data'][] = array(
-        'data' => $payment_action,
-        'class' => array( $action_class ),
+      'data' => $payment_action,
+      'class' => array($action_class),
     );
 
     $rows[] = $row;
@@ -208,17 +208,17 @@ function theme_commerce_pos_order_balance_summary(&$variables) {
   }
 
   $transaction_summary = theme('table', array(
-      'rows' => $rows,
-      'attributes' => array(
-          'class' => array('commerce-pos-sidebar-table', 'commerce-pos-order-balance-summary'),
-      ),
+    'rows' => $rows,
+    'attributes' => array(
+      'class' => array('commerce-pos-sidebar-table', 'commerce-pos-order-balance-summary'),
+    ),
   ));
 
   $output = $transaction_summary;
 
   if (!empty($variables['include_balance'])) {
     $transaction_balance = theme('commerce_pos_transaction_balance', array(
-        'rows' => commerce_pos_balance_summary_rows($totals, $order),
+      'rows' => commerce_pos_balance_summary_rows($totals, $order),
     ));
 
     $output .= $transaction_balance;
@@ -239,13 +239,13 @@ function theme_commerce_pos_transaction_actions($variables) {
 
   foreach ($actions as $action) {
     $output[] = l($action, '#', array(
-        'attributes' => array(
-            'class' => array(
-                'commerce-pos-' . strtolower($action) . '-payment',
-                'button-link',
-            ),
-            'data-transaction-id' => $transaction->transaction_id,
+      'attributes' => array(
+        'class' => array(
+          'commerce-pos-' . strtolower($action) . '-payment',
+          'button-link',
         ),
+        'data-transaction-id' => $transaction->transaction_id,
+      ),
     ));
   }
 

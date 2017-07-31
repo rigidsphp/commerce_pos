@@ -905,7 +905,7 @@ function commerce_pos_report_build_journal_role_table(array $filters = array()) 
     // so we can grab how much change was given back.
     $payment_types_array = [
       $filters['payment_type'],
-      'commerce_pos_change'
+      'commerce_pos_change',
     ];
     $query->condition('pt.payment_method', $payment_types_array, 'IN');
   }
@@ -1325,7 +1325,7 @@ function commerce_pos_report_sales_report($form, &$form_state) {
     '#markup' => theme('commerce_pos_header', array('account' => $user)),
   );
   $form['report-options'] = array(
-      '#theme' => 'commerce_pos_report_options',
+    '#theme' => 'commerce_pos_report_options',
   );
   $query_filter_defaults = array(
     'range_select' => 'all',
@@ -1405,7 +1405,7 @@ function commerce_pos_report_sales_report($form, &$form_state) {
   );
   $form['filters']['range_info'] = array(
     '#type' => 'item',
-    '#markup' => '<label>&nbsp;</label><div class="form-item-separator"><label>&nbsp;</label><div class="range-text">'.t('&gt;').'</div></div>',
+    '#markup' => '<label>&nbsp;</label><div class="form-item-separator"><label>&nbsp;</label><div class="range-text">' . t('&gt;') . '</div></div>',
     '#states' => array(
       'visible' => array(
         ':input[name="filters[range_select]"]' => array('value' => 'custom'),

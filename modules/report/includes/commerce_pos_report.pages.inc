@@ -1324,7 +1324,9 @@ function commerce_pos_report_sales_report($form, &$form_state) {
   $form['header'] = array(
     '#markup' => theme('commerce_pos_header', array('account' => $user)),
   );
-
+  $form['report-options'] = array(
+      '#theme' => 'commerce_pos_report_options',
+  );
   $query_filter_defaults = array(
     'range_select' => 'all',
     'start_date' => format_date(REQUEST_TIME, 'custom', 'Y-m-d'),
@@ -1401,7 +1403,15 @@ function commerce_pos_report_sales_report($form, &$form_state) {
       ),
     ),
   );
-
+  $form['filters']['range_info'] = array(
+    '#type' => 'item',
+    '#markup' => '<label>&nbsp;</label><div class="form-item-separator"><label>&nbsp;</label><div class="range-text">'.t('&gt;').'</div></div>',
+    '#states' => array(
+      'visible' => array(
+        ':input[name="filters[range_select]"]' => array('value' => 'custom'),
+      ),
+    ),
+  );
   $form['filters']['end_date'] = array(
     '#type' => 'date_select',
     '#title' => t('End Date'),
@@ -1417,17 +1427,14 @@ function commerce_pos_report_sales_report($form, &$form_state) {
       ),
     ),
   );
-
   $form['filters']['submit'] = array(
-    '#value' => t('Add Filter'),
+    '#value' => t('Apply Filter'),
     '#type' => 'submit',
     '#attributes' => array(
       'class' => array('commerce-pos-report-journal-role-submit'),
     ),
   );
-  $form['report-options'] = array(
-    '#theme' => 'commerce_pos_report_options',
-  );
+
   $form['options'] = array(
     '#type' => 'container',
     '#id' => 'commerce-pos-report-journal-role-options-container',

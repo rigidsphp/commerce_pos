@@ -78,7 +78,7 @@ function commerce_pos_report_end_of_day($form, &$form_state) {
 
   $form['filters'] = array(
     '#type' => 'container',
-    '#attributes' => array('class' => array('clearfix'))
+    '#attributes' => array('class' => array('clearfix')),
   );
 
   $form['filters']['date_header'] = array(
@@ -130,14 +130,8 @@ function commerce_pos_report_end_of_day($form, &$form_state) {
     );
   }
 
-
   // Get saved data for requested date.
   $report_history = commerce_pos_report_get_eod_report($date_filter, $register_id);
-
-//  $form['clearfix'] = array(
-//    '#type' => 'item',
-//    '#markup' => '<div class="clearfix"></div>',
-//  );
 
   $form['results'] = array(
     '#type' => 'container',
@@ -643,7 +637,7 @@ function commerce_pos_report_journal_role($form, &$form_state) {
 
   $form['filters'] = array(
     '#type' => 'container',
-    '#attributes' => array('class' => array('clearfix'))
+    '#attributes' => array('class' => array('clearfix')),
   );
 
   if (!isset($form_state['results_container_id'])) {
@@ -699,7 +693,6 @@ function commerce_pos_report_journal_role($form, &$form_state) {
       ),
     );
   }
-
 
   $form['options'] = array(
     '#type' => 'container',

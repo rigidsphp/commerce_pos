@@ -68,6 +68,18 @@ function commerce_pos_report_end_of_day($form, &$form_state) {
   $form['header'] = array(
     '#markup' => $form_state['header'],
   );
+  if (!isset($form_state['report_options'])) {
+    $form_state['report_options'] = theme('commerce_pos_report_options');
+  }
+
+  $form['report-options'] = array(
+    '#markup' => $form_state['report_options'],
+  );
+
+  $form['filters'] = array(
+    '#type' => 'container',
+    '#attributes' => array('class' => array('clearfix'))
+  );
 
   $form['filters']['date_header'] = array(
     '#type' => 'item',
@@ -118,16 +130,14 @@ function commerce_pos_report_end_of_day($form, &$form_state) {
     );
   }
 
-  if (!isset($form_state['report_options'])) {
-    $form_state['report_options'] = theme('commerce_pos_report_options');
-  }
-
-  $form['report-options'] = array(
-    '#markup' => $form_state['report_options'],
-  );
 
   // Get saved data for requested date.
   $report_history = commerce_pos_report_get_eod_report($date_filter, $register_id);
+
+//  $form['clearfix'] = array(
+//    '#type' => 'item',
+//    '#markup' => '<div class="clearfix"></div>',
+//  );
 
   $form['results'] = array(
     '#type' => 'container',
@@ -627,8 +637,13 @@ function commerce_pos_report_journal_role($form, &$form_state) {
 
   $query_params = drupal_get_query_parameters() + $query_filter_defaults;
 
+  $form['report-options'] = array(
+    '#theme' => 'commerce_pos_report_options',
+  );
+
   $form['filters'] = array(
     '#type' => 'container',
+    '#attributes' => array('class' => array('clearfix'))
   );
 
   if (!isset($form_state['results_container_id'])) {
@@ -685,9 +700,6 @@ function commerce_pos_report_journal_role($form, &$form_state) {
     );
   }
 
-  $form['report-options'] = array(
-    '#theme' => 'commerce_pos_report_options',
-  );
 
   $form['options'] = array(
     '#type' => 'container',
